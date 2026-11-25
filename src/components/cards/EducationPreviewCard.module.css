@@ -1,0 +1,99 @@
+.card {
+  background-color: var(--color-charcoal);
+  border: 1px solid #262626;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: all var(--transition-normal);
+}
+
+.card:hover {
+  border-color: var(--color-signature-orange);
+  background-color: #1C1C1C;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.logoContainer {
+  height: 44px;
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FFFFFF;
+  border: 1px solid #333333;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  overflow: hidden;
+}
+
+.logoImg {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.scoreBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-signature-orange);
+  background-color: rgba(255, 107, 39, 0.12);
+  border: 1px solid rgba(255, 107, 39, 0.25);
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--radius-sm);
+}
+
+.content {
+  flex: 1;
+  margin-bottom: 1.25rem;
+}
+
+.institution {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-white);
+  margin-bottom: 0.25rem;
+  line-height: 1.25;
+}
+
+.qualification {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #E5E5E5;
+  margin-bottom: 0.15rem;
+}
+
+.major {
+  font-size: 0.8125rem;
+  color: #A3A3A3;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid #262626;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #A3A3A3;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}

@@ -1,0 +1,206 @@
+.card {
+  position: relative;
+  background-color: var(--color-charcoal);
+  border: 1px solid #242424;
+  border-radius: var(--radius-lg);
+  padding: clamp(1.5rem, 2.5vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: #383838;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+}
+
+/* Mouse pointer spotlight overlay */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    450px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+    rgba(255, 107, 39, 0.08),
+    transparent 50%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+/* Dynamic border glow */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(
+    320px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+    rgba(255, 107, 39, 0.5),
+    transparent 55%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.card:hover::after {
+  opacity: 1;
+}
+
+.accentLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-signature-orange) 0%, rgba(255, 107, 39, 0.2) 60%, transparent 100%);
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+  z-index: 3;
+}
+
+.card:hover .accentLine {
+  opacity: 1;
+}
+
+.logoRow {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.logoContainer {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: #FFFFFF;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  max-width: 150px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.logoImg {
+  max-height: 28px;
+  max-width: 130px;
+  object-fit: contain;
+}
+
+.metaBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #8E8E8E;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.content {
+  position: relative;
+  z-index: 3;
+  flex: 1;
+  margin-bottom: 1.5rem;
+}
+
+.companyInfo {
+  margin-bottom: 0.85rem;
+}
+
+.companyName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-white);
+  margin-bottom: 0.2rem;
+  line-height: 1.2;
+}
+
+.roleTitle {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--color-signature-orange);
+  font-weight: 500;
+}
+
+.previewText {
+  font-size: 0.9375rem;
+  color: #A3A3A3;
+  line-height: 1.6;
+  margin-bottom: 1.15rem;
+}
+
+.techPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.techPill {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #D4D4D4;
+  background-color: #161616;
+  border: 1px solid #262626;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+}
+
+.techMore {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #737373;
+  padding: 0.2rem 0.35rem;
+}
+
+.cardFooter {
+  position: relative;
+  z-index: 3;
+  padding-top: 1.15rem;
+  border-top: 1px solid #202020;
+}
+
+.detailsLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-white);
+  transition: all var(--transition-fast);
+}
+
+.detailsLink:hover {
+  color: var(--color-signature-orange);
+  transform: translateX(3px);
+}

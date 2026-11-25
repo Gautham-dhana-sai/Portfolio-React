@@ -1,0 +1,141 @@
+.section {
+  padding: clamp(3rem, 6vw, 5rem) 0;
+  background-color: var(--color-rich-black);
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 3vw, 2.5rem);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.contactCard {
+  background-color: var(--color-charcoal);
+  border: 1px solid #262626;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-normal);
+  overflow: hidden;
+}
+
+.contactCard:hover {
+  border-color: var(--color-signature-orange);
+  background-color: #1C1C1C;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background-color: #212121;
+  border: 1px solid #2E2E2E;
+  border-radius: var(--radius-sm);
+  color: var(--color-white);
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.contactCard:hover .iconWrap {
+  background-color: rgba(255, 107, 39, 0.15);
+  border-color: rgba(255, 107, 39, 0.3);
+  color: var(--color-signature-orange);
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cardLabel {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #737373;
+  margin-bottom: 0.25rem;
+}
+
+.cardValue {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-white);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  line-height: 1.35;
+}
+
+.socialBar {
+  padding-top: 2rem;
+  border-top: 1px solid #262626;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.socialHeading {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #A3A3A3;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.socialList {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.socialChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--color-charcoal);
+  border: 1px solid #262626;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--color-white);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.socialChip:hover {
+  border-color: var(--color-signature-orange);
+  background-color: #212121;
+  color: var(--color-signature-orange);
+}
+
+.handle {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #A3A3A3;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
