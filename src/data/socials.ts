@@ -1,57 +1,109 @@
 export interface SocialLink {
   id: string;
   name: string;
-  label: string;
   url: string;
-  icon: 'github' | 'linkedin' | 'email' | 'phone' | 'twitter' | 'instagram' | 'youtube' | 'medium' | 'devto' | 'stackoverflow' | 'globe';
-  category: 'primary' | 'social' | 'contact';
-  isExternal: boolean;
-  displayValue?: string;
+  handle: string;
+  iconName: string;
+  category: "primary" | "social" | "contact";
 }
 
-export const socialLinks: SocialLink[] = [
+/**
+ * Flexible, data-driven social configuration.
+ * Only platforms with a defined, non-empty URL will be rendered.
+ * New platforms can be added here seamlessly without rewriting UI components.
+ */
+export const socialLinksConfig: SocialLink[] = [
   {
     id: "github",
     name: "GitHub",
-    label: "Explore repositories & open-source contributions",
     url: "https://github.com/Gautham-dhana-sai",
-    icon: "github",
-    category: "primary",
-    isExternal: true,
-    displayValue: "github.com/Gautham-dhana-sai"
+    handle: "Gautham-dhana-sai",
+    iconName: "Github",
+    category: "primary"
   },
   {
     id: "linkedin",
     name: "LinkedIn",
-    label: "Connect professionally on LinkedIn",
     url: "https://www.linkedin.com/in/goutham-pandiri-8b89021b1/",
-    icon: "linkedin",
-    category: "primary",
-    isExternal: true,
-    displayValue: "linkedin.com/in/goutham-pandiri-8b89021b1"
+    handle: "goutham-pandiri",
+    iconName: "Linkedin",
+    category: "primary"
+  },
+  {
+    id: "leetcode",
+    name: "LeetCode",
+    url: "https://leetcode.com/u/GouthamDhanaSai/",
+    handle: "GouthamDhanaSai",
+    iconName: "LeetCode",
+    category: "primary"
+  },
+  {
+    id: "instagram",
+    name: "Instagram",
+    url: "https://www.instagram.com/__.ace_?evlk=Nzd0NHk0endlY3Bh&utm_source=qr",
+    handle: "__.ace_",
+    iconName: "Instagram",
+    category: "social"
   },
   {
     id: "email",
     name: "Email",
-    label: "Send a direct email message",
     url: "mailto:gautham523sai@gmail.com",
-    icon: "email",
-    category: "contact",
-    isExternal: false,
-    displayValue: "gautham523sai@gmail.com"
+    handle: "gautham523sai@gmail.com",
+    iconName: "Mail",
+    category: "contact"
   },
   {
     id: "phone",
     name: "Phone",
-    label: "Direct mobile communication",
-    url: "tel:9133683491",
-    icon: "phone",
-    category: "contact",
-    isExternal: false,
-    displayValue: "+91 91336 83491"
+    url: "tel:+919133683491",
+    handle: "+91 9133683491",
+    iconName: "Phone",
+    category: "contact"
+  },
+  // Future-ready platforms (empty URLs won't be rendered)
+  {
+    id: "x",
+    name: "X (Twitter)",
+    url: "",
+    handle: "",
+    iconName: "Twitter",
+    category: "social"
+  },
+  {
+    id: "youtube",
+    name: "YouTube",
+    url: "",
+    handle: "",
+    iconName: "Youtube",
+    category: "social"
+  },
+  {
+    id: "medium",
+    name: "Medium",
+    url: "",
+    handle: "",
+    iconName: "BookOpen",
+    category: "social"
+  },
+  {
+    id: "devto",
+    name: "Dev.to",
+    url: "",
+    handle: "",
+    iconName: "Code",
+    category: "social"
+  },
+  {
+    id: "stackoverflow",
+    name: "Stack Overflow",
+    url: "",
+    handle: "",
+    iconName: "Layers",
+    category: "social"
   }
 ];
 
-export const getSocialLinkById = (id: string): SocialLink | undefined => {
-  return socialLinks.find(link => link.id === id);
-};
+export const activeSocialLinks = socialLinksConfig.filter(
+  (item) => item.url && item.url.trim().length > 0 && item.category !== "contact"
+);

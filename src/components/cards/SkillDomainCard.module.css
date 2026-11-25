@@ -1,0 +1,274 @@
+.domainCard {
+  position: relative;
+  background-color: var(--color-charcoal);
+  border: 1px solid #242424;
+  border-radius: var(--radius-lg);
+  padding: clamp(1.5rem, 2.5vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+.domainCard:hover {
+  transform: translateY(-2px);
+  border-color: #383838;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+  background: linear-gradient(180deg, #181818 0%, #141414 100%);
+  border-color: #2c2c2c;
+}
+
+/* Mouse pointer spotlight overlay */
+.domainCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    500px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+    rgba(255, 107, 39, 0.08),
+    transparent 50%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.domainCard:hover::before {
+  opacity: 1;
+}
+
+/* Dynamic border glow following cursor */
+.domainCard::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(
+    360px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+    rgba(255, 107, 39, 0.5),
+    transparent 55%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.domainCard:hover::after {
+  opacity: 1;
+}
+
+/* Top accent illumination line */
+.accentLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-signature-orange) 0%, rgba(255, 107, 39, 0.2) 60%, transparent 100%);
+  opacity: 0.65;
+  transition: opacity 0.3s ease;
+  z-index: 3;
+}
+
+.domainCard:hover .accentLine {
+  opacity: 1;
+}
+
+/* Card Header */
+.cardHeader {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.15rem;
+  border-bottom: 1px solid #222222;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: #1c1c1c;
+  border: 1px solid #2e2e2e;
+  border-radius: var(--radius-md);
+  color: var(--color-signature-orange);
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+.domainCard:hover .iconWrap {
+  background-color: rgba(255, 107, 39, 0.14);
+  border-color: rgba(255, 107, 39, 0.35);
+  box-shadow: 0 0 16px rgba(255, 107, 39, 0.2);
+}
+
+.titleText {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.domainTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-white);
+  line-height: 1.2;
+  margin-bottom: 0.2rem;
+}
+
+.domainTag {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #8E8E8E;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.headerBadges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.countBadge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-signature-orange);
+  background: rgba(255, 107, 39, 0.08);
+  border: 1px solid rgba(255, 107, 39, 0.22);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+}
+
+/* Skills Chip Cloud - aligned to top, any empty space is kept at bottom */
+.skillsCloud {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 0.55rem;
+  margin-top: 0;
+  margin-bottom: auto;
+}
+
+/* Base Skill Chip */
+.skillChip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background-color: #1A1A1A;
+  border: 1px solid #2a2a2a;
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #D4D4D4;
+  cursor: default;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.skillDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #555555;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+/* Flagship / Core Skills styling */
+.coreChip {
+  border-color: #383838;
+  background-color: #1d1d1d;
+  color: var(--color-white);
+}
+
+.coreChip .skillDot {
+  background-color: var(--color-signature-orange);
+}
+
+/* Hover state */
+.skillChip:hover {
+  background-color: #242424;
+  border-color: var(--color-signature-orange);
+  color: var(--color-white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(255, 107, 39, 0.22);
+}
+
+.skillChip:hover .skillDot {
+  background-color: var(--color-signature-orange);
+  transform: scale(1.4);
+  box-shadow: 0 0 8px var(--color-signature-orange);
+}
+
+/* Active Highlighted State (Search match or Preset filter) */
+.highlightedChip {
+  background: rgba(255, 107, 39, 0.16) !important;
+  border-color: var(--color-signature-orange) !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  box-shadow: 0 0 16px rgba(255, 107, 39, 0.35);
+  transform: translateY(-2px);
+}
+
+.highlightedChip .skillDot {
+  background-color: #FF8A50 !important;
+  transform: scale(1.4);
+  box-shadow: 0 0 8px #FF6B27;
+}
+
+/* Dimmed state when another skill is being highlighted/searched */
+.dimmedChip {
+  opacity: 0.28;
+  filter: grayscale(80%);
+  transform: scale(0.97);
+}
+
+.dimmedChip:hover {
+  opacity: 0.9;
+  filter: none;
+  transform: none;
+}
+
+@media (max-width: 640px) {
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

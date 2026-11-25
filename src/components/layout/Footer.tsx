@@ -1,141 +1,177 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUp, Mail, Phone } from 'lucide-react';
-import { portfolioData } from '../../data/portfolio';
-import { GithubIcon, LinkedinIcon } from '../common/BrandSocialIcon';
-
-const CURRENT_YEAR = 2026;
+import { ArrowUpRight, Github, Linkedin, Mail, Phone, ChevronRight, Instagram } from 'lucide-react';
+import { personalInfo } from '../../data/personal';
+import { LeetCodeIcon } from '../common/Icons';
+import styles from './Footer.module.css';
 
 export const Footer: React.FC = () => {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const navLinks = [
-    { label: 'Home', to: '/' },
-    { label: 'About', to: '/about' },
-    { label: 'Akrivia Experience', to: '/experience/akrivia' },
-    { label: 'Inncircles Experience', to: '/experience/inncircles' },
-    { label: 'Motivity Labs Experience', to: '/experience/motivity' },
-    { label: 'Open-Bot Case Study', to: '/projects/open-bot' },
-    { label: 'Find-It-Here Case Study', to: '/projects/find-it-here' },
-    { label: 'Education', to: '/education' },
-    { label: 'Resume', to: '/resume' },
-  ];
+  const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-richBlack border-t border-[#303030] text-[#737373] text-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
-          {/* Identity & Short Bio */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-charcoal border border-[#303030] flex items-center justify-center font-heading font-black text-white">
-                <span>P</span>
-                <span className="text-[#FF6B27]">G</span>
-              </div>
-              <div>
-                <span className="font-heading font-bold text-white tracking-tight block">
-                  {portfolioData.name}
-                </span>
-                <span className="font-mono text-xs text-[#FF6B27]">
-                  {portfolioData.designation} — 4 Years Experience
-                </span>
-              </div>
-            </div>
-
-            <p className="text-sm leading-relaxed text-[#737373] max-w-md">
-              Building scalable web applications, microservices, and AI-powered workflows with clean architectural discipline.
-            </p>
-
-            <div className="pt-2 flex items-center gap-3">
-              <a
-                href="https://github.com/Gautham-dhana-sai"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-charcoal border border-[#303030] text-[#737373] hover:text-white hover:border-[#FF6B27] transition-colors"
-                aria-label="GitHub"
-              >
-                <GithubIcon className="w-4 h-4" />
-              </a>
-              <a
-                href="https://www.linkedin.com/in/goutham-pandiri-8b89021b1/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-charcoal border border-[#303030] text-[#737373] hover:text-white hover:border-[#FF6B27] transition-colors"
-                aria-label="LinkedIn"
-              >
-                <LinkedinIcon className="w-4 h-4" />
-              </a>
-              <a
-                href={`mailto:${portfolioData.contact.email}`}
-                className="p-2 rounded-lg bg-charcoal border border-[#303030] text-[#737373] hover:text-white hover:border-[#FF6B27] transition-colors"
-                aria-label="Email"
-              >
-                <Mail className="w-4 h-4" />
-              </a>
-              <a
-                href={`tel:${portfolioData.contact.phone}`}
-                className="p-2 rounded-lg bg-charcoal border border-[#303030] text-[#737373] hover:text-white hover:border-[#FF6B27] transition-colors"
-                aria-label="Phone"
-              >
-                <Phone className="w-4 h-4" />
-              </a>
-            </div>
+    <footer className={styles.footer}>
+      <div className={styles.container}>
+        {/* Top bar: Availability & Call to Action */}
+        <div className={styles.topSection}>
+          <div className={styles.statusBlock}>
+            <span className={styles.statusPulse} aria-hidden="true" />
+            <span className={styles.statusText}>
+              Available for full-time engineering roles & system architecture
+            </span>
           </div>
-
-          {/* Quick Deep-Dive Links */}
-          <div>
-            <h4 className="font-mono text-xs font-semibold uppercase tracking-wider text-white mb-4">
-              Explore Portfolio
-            </h4>
-            <ul className="space-y-2.5">
-              {navLinks.slice(0, 5).map((link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className="hover:text-[#FF6B27] transition-colors inline-block text-xs"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-mono text-xs font-semibold uppercase tracking-wider text-white mb-4">
-              Projects & Details
-            </h4>
-            <ul className="space-y-2.5">
-              {navLinks.slice(5).map((link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className="hover:text-[#FF6B27] transition-colors inline-block text-xs"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          <div className={styles.ctaBlock}>
+            <Link to="/contact" className={styles.ctaButton}>
+              <span>Start a Conversation</span>
+              <ChevronRight size={16} />
+            </Link>
           </div>
         </div>
 
-        {/* Bottom row */}
-        <div className="mt-12 pt-8 border-t border-[#303030] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono">
-          <p className="text-[#737373]">
-            © {CURRENT_YEAR} Pandiri Goutham Dhana Sai Reddy. Crafted with Black, White & Orange design system.
-          </p>
+        {/* Middle grid */}
+        <div className={styles.grid}>
+          {/* Identity col */}
+          <div className={styles.identityCol}>
+            <div className={styles.brandTitle}>
+              {personalInfo.name}
+            </div>
+            <p className={styles.roleTitle}>{personalInfo.role}</p>
+            <p className={styles.identityBio}>
+              Architecting scalable web applications, robust microservices, and reliable automated workflows.
+            </p>
+            <div className={styles.socialRow}>
+              <a
+                href={personalInfo.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.socialIcon}
+                aria-label="GitHub"
+              >
+                <Github size={18} />
+              </a>
+              <a
+                href={personalInfo.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.socialIcon}
+                aria-label="LinkedIn"
+              >
+                <Linkedin size={18} />
+              </a>
+              <a
+                href={personalInfo.leetcode}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.socialIcon}
+                aria-label="LeetCode"
+              >
+                <LeetCodeIcon size={18} />
+              </a>
+              <a
+                href={personalInfo.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.socialIcon}
+                aria-label="Instagram"
+              >
+                <Instagram size={18} />
+              </a>
+              <a
+                href={`mailto:${personalInfo.email}`}
+                className={styles.socialIcon}
+                aria-label="Email"
+              >
+                <Mail size={18} />
+              </a>
+              <a
+                href={`tel:${personalInfo.phone.replace(/[^0-9]/g, '')}`}
+                className={styles.socialIcon}
+                aria-label="Phone"
+              >
+                <Phone size={18} />
+              </a>
+            </div>
+          </div>
 
-          <button
-            onClick={scrollToTop}
-            className="flex items-center gap-1.5 text-[#737373] hover:text-white hover:text-[#FF6B27] transition-colors p-1"
-            aria-label="Back to top"
-          >
-            <span>Back to top</span>
-            <ArrowUp className="w-3.5 h-3.5 text-[#FF6B27]" />
-          </button>
+          {/* Navigation Links */}
+          <div className={styles.linkCol}>
+            <h4 className={styles.colHeading}>Explore</h4>
+            <ul className={styles.colList}>
+              <li><Link to="/about">About Me</Link></li>
+              <li><Link to="/experience">Experience Timeline</Link></li>
+              <li><Link to="/projects">Selected Projects</Link></li>
+              <li><Link to="/skills">Skills & Stack</Link></li>
+              <li><Link to="/education">Education</Link></li>
+              <li><Link to="/resume">Resume / CV</Link></li>
+            </ul>
+          </div>
+
+          {/* Companies Detailed */}
+          <div className={styles.linkCol}>
+            <h4 className={styles.colHeading}>Companies</h4>
+            <ul className={styles.colList}>
+              <li>
+                <Link to="/experience/akrivia">
+                  Akrivia HCM <ArrowUpRight size={12} className={styles.linkArrow} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/experience/inncircles">
+                  Inncircles Technologies <ArrowUpRight size={12} className={styles.linkArrow} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/experience/motivity">
+                  Motivity Labs <ArrowUpRight size={12} className={styles.linkArrow} />
+                </Link>
+              </li>
+            </ul>
+
+            <h4 className={`${styles.colHeading} ${styles.subHeadingMargin}`}>Projects</h4>
+            <ul className={styles.colList}>
+              <li>
+                <Link to="/projects/find-it-here">
+                  Find-It-Here (MVP) <ArrowUpRight size={12} className={styles.linkArrow} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/projects/open-bot">
+                  Open-Bot (RAG) <ArrowUpRight size={12} className={styles.linkArrow} />
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Direct Contact */}
+          <div className={styles.linkCol}>
+            <h4 className={styles.colHeading}>Direct Contact</h4>
+            <div className={styles.contactItem}>
+              <span className={styles.contactLabel}>Email Address</span>
+              <a href={`mailto:${personalInfo.email}`} className={styles.contactValue}>
+                {personalInfo.email}
+              </a>
+            </div>
+            <div className={styles.contactItem}>
+              <span className={styles.contactLabel}>Phone</span>
+              <a href={`tel:${personalInfo.phone.replace(/[^0-9]/g, '')}`} className={styles.contactValue}>
+                {personalInfo.phone}
+              </a>
+            </div>
+            <div className={styles.contactItem}>
+              <span className={styles.contactLabel}>Location</span>
+              <span className={styles.locationText}>{personalInfo.location}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className={styles.bottomBar}>
+          <div className={styles.copyright}>
+            © {currentYear} {personalInfo.name}. All rights reserved.
+          </div>
+          <div className={styles.paletteNotice}>
+            <span className={styles.colorIndicator} />
+            Built with React, TypeScript & Strict Monochrome/Orange System
+          </div>
         </div>
       </div>
     </footer>
