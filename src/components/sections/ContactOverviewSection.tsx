@@ -23,8 +23,6 @@ export const ContactOverviewSection: React.FC = () => {
           eyebrow="Get In Touch"
           title="Let's Connect"
           subtitle="Reach out directly for engineering roles, technical collaboration, or architecture inquiries."
-          actionText="Full Contact & Channels"
-          actionLink="/contact"
         />
 
         <div className={styles.grid}>

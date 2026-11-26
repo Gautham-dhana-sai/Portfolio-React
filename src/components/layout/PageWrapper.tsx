@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
+import { NishiChat } from '../nishi-chat/NishiChat';
 import styles from './PageWrapper.module.css';
 
 interface PageWrapperProps {
@@ -15,6 +16,7 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({ children }) => {
         {children}
       </main>
       <Footer />
+      <NishiChat />
     </div>
   );
 };
