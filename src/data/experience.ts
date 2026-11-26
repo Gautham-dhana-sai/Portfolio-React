@@ -30,7 +30,7 @@ export const experiences: CompanyExperience[] = [
     name: "Akrivia Automation Pvt. Ltd.",
     shortName: "Akrivia HCM",
     location: "Hyderabad, India",
-    period: "Sep 2022 – Present",
+    period: "Sep 2022 – Nov 2025",
     logo: "/logos/akrivia.svg",
     productContext:
       "Akrivia HCM is an enterprise HRMS suite comprising modular applications that streamline human capital management, attendance tracking, and automated payroll operations without manual intervention. Key modules include HRF, Payroll, Time & Attendance, Leaves, Recruitment, Expenses, and Surveys.",
@@ -114,7 +114,7 @@ export const experiences: CompanyExperience[] = [
     name: "Inncircles Technologies Pvt. Ltd.",
     shortName: "Inncircles Technologies",
     location: "Hyderabad, India",
-    period: "Product Developer",
+    period: "Nov 2025 – Jun 2026",
     logo: "/logos/inncircles.png",
     productContext:
       "Inncircles is a comprehensive construction technology suite comprising 5 interconnected products that manage the complete lifecycle for ASBL constructions: Leads, CRM, Homes, Finance, and Progress. Features real-time integrations with banking, utility boards, and vendor marketplaces.",
@@ -185,7 +185,7 @@ export const experiences: CompanyExperience[] = [
     name: "Motivity Labs Pvt. Ltd.",
     shortName: "Motivity Labs",
     location: "Hyderabad, India",
-    period: "Software Engineer",
+    period: "Jun 2026 – Present",
     logo: "/logos/motivity.png",
     productContext:
       "Motivity Labs (part of Magellanic Cloud) delivers global digital engineering services and specialized in-house products across smart surveillance, computer vision analytics, and modern serverless healthcare applications.",

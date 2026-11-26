@@ -9,8 +9,8 @@ export const ProjectsOverviewSection: React.FC = () => {
     <section className={styles.section}>
       <div className={styles.container}>
         <SectionHeading
-          eyebrow="Portfolio Projects"
-          title="Selected Projects"
+          eyebrow="Real-Time Projects"
+          title="Projects"
           subtitle="Independent full-stack and AI applications engineered to solve distinct real-world problems."
         />
 
