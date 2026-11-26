@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bot, AlertCircle, RotateCcw, FileText } from 'lucide-react';
 import { Citation } from '../../services/nishiChatApi';
 import styles from './NishiChat.module.css';
@@ -7,6 +7,9 @@ export interface ChatMessageItem {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  clientMessageId?: string;
+  replyToClientMessageId?: string;
+  retryContent?: string;
   citations?: Citation[];
   timestamp?: Date;
   status?: 'sending' | 'sent' | 'error';
@@ -15,12 +18,69 @@ export interface ChatMessageItem {
 
 interface NishiMessageProps {
   message: ChatMessageItem;
-  onRetry?: (messageId: string, content: string) => void;
+  onRetry?: (clientMessageId: string, content: string) => void;
 }
+
+const THINKING_STATUSES = [
+  'Pondering...',
+  'Connecting the dots...',
+  'Percolating...',
+  'Mulling it over...',
+  'Ruminating...',
+  'Brewing thoughts...',
+  'Noodling on that...',
+  'Untangling ideas...',
+  'Simmering...',
+  'Piecing things together...',
+];
+
+const getProgressText = (elapsedSeconds: number): string => {
+  const index = Math.floor(elapsedSeconds / 5) % THINKING_STATUSES.length;
+  return THINKING_STATUSES[index];
+};
+
+const ThinkingIndicator: React.FC = () => {
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const statusText = getProgressText(elapsedSeconds);
+
+  return (
+    <div className={`${styles.messageRow} ${styles.messageRowAssistant}`}>
+      <div className={styles.assistantAvatar} aria-hidden="true">
+        <Bot size={15} />
+      </div>
+      <div className={styles.thinkingBubble} aria-label={statusText}>
+        <div className={styles.thinkingDots} aria-hidden="true">
+          <span className={styles.typingDot} />
+          <span className={styles.typingDot} />
+          <span className={styles.typingDot} />
+        </div>
+        <span key={statusText} className={styles.thinkingStatusText}>
+          {statusText}
+        </span>
+      </div>
+    </div>
+  );
+};
 
 export const NishiMessage: React.FC<NishiMessageProps> = ({ message, onRetry }) => {
   const isUser = message.role === 'user';
   const hasCitations = Array.isArray(message.citations) && message.citations.length > 0;
+
+  if (!isUser && message.status === 'sending') {
+    return <ThinkingIndicator />;
+  }
+
+  if (!isUser && message.status === 'error') {
+    return null;
+  }
 
   return (
     <div
@@ -37,7 +97,7 @@ export const NishiMessage: React.FC<NishiMessageProps> = ({ message, onRetry }) 
       <div
         className={`${styles.messageBubble} ${
           isUser ? styles.messageUser : styles.messageAssistant
-        } ${message.status === 'error' ? styles.userMessageError : ''}`}
+        } ${isUser && message.status === 'error' ? styles.userMessageError : ''}`}
       >
         <div className={styles.messageText}>{message.content}</div>
 
@@ -72,7 +132,7 @@ export const NishiMessage: React.FC<NishiMessageProps> = ({ message, onRetry }) 
           </div>
         )}
 
-        {/* Failed submission error & retry control */}
+        {/* Failed submission error & retry control on user's message */}
         {isUser && message.status === 'error' && (
           <div className={styles.errorRow}>
             <AlertCircle size={13} />
@@ -81,7 +141,7 @@ export const NishiMessage: React.FC<NishiMessageProps> = ({ message, onRetry }) 
               <button
                 type="button"
                 className={styles.retryBtn}
-                onClick={() => onRetry(message.id, message.content)}
+                onClick={() => onRetry(message.clientMessageId || message.id, message.content)}
                 title="Retry sending this message"
               >
                 <RotateCcw size={11} />
