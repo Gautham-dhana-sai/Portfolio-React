@@ -4,17 +4,15 @@
  * All requests must include header: 'x-request-origin': 'external_integration'
  */
 
-const API_BASE_URL =
-  import.meta.env.VITE_NISHI_API_BASE_URL?.replace(/\/+$/, '') ||
-  'https://rag-bot-server.vercel.app';
-const REQUEST_ORIGIN_HEADER =
-  import.meta.env.VITE_NISHI_REQUEST_ORIGIN || 'external_integration';
+const API_BASE_URL = (import.meta.env.VITE_NISHI_API_BASE_URL ?? '').replace(/\/+$/, '');
+const REQUEST_ORIGIN_HEADER = import.meta.env.VITE_NISHI_REQUEST_ORIGIN ?? '';
 
-// Extended timeouts to accommodate serverless cold starts, multi-turn RAG retrieval, and LLM answer generation
-const DEFAULT_TIMEOUT_MS =
-  Number(import.meta.env.VITE_NISHI_DEFAULT_TIMEOUT_MS) || 120000; // 2 minutes for session initialization / history restoration
+const DEFAULT_TIMEOUT_MS = Number(import.meta.env.VITE_NISHI_DEFAULT_TIMEOUT_MS);
+const CONFIGURED_SEND_TIMEOUT_MS = Number(import.meta.env.VITE_NISHI_SEND_TIMEOUT_MS);
 const SEND_MESSAGE_TIMEOUT_MS =
-  Number(import.meta.env.VITE_NISHI_SEND_TIMEOUT_MS) || 180000; // 3 minutes for deep vector retrieval & generation
+  Number.isFinite(CONFIGURED_SEND_TIMEOUT_MS) && CONFIGURED_SEND_TIMEOUT_MS >= 300000
+    ? CONFIGURED_SEND_TIMEOUT_MS
+    : 300000; // Enforce at least 5 minutes (300,000 ms) timeout for /messages
 
 export interface Citation {
   id?: string;
@@ -59,8 +57,15 @@ async function fetchWithTimeout(
   options: RequestInit = {},
   timeoutMs = DEFAULT_TIMEOUT_MS
 ): Promise<Response> {
+  if (!API_BASE_URL) {
+    throw new Error('Chatbot API URL (VITE_NISHI_API_BASE_URL) is not configured.');
+  }
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const hasTimeout = Number.isFinite(timeoutMs) && timeoutMs > 0;
+  const timeoutId = hasTimeout
+    ? setTimeout(() => controller.abort(), timeoutMs)
+    : undefined;
 
   try {
     const response = await fetch(url, {
@@ -70,13 +75,13 @@ async function fetchWithTimeout(
     return response;
   } catch (error: any) {
     if (error.name === 'AbortError') {
-      throw new Error(
-        'Request timed out. The AI model is taking longer than usual to retrieve and generate an answer. Please retry.'
-      );
+      throw new Error('Request timed out.');
     }
     throw error;
   } finally {
-    clearTimeout(timeoutId);
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
   }
 }
 
@@ -88,8 +93,9 @@ const inFlightGetMessages = new Map<string, Promise<ApiMessage[]>>();
  * 1. Create a new conversation session for Nishi.
  * POST /v1/portals/conversations
  */
-export async function createConversation(title = 'Nishi Chat'): Promise<ConversationResponse> {
-  const existing = inFlightCreateConversation.get(title);
+export async function createConversation(title?: string): Promise<ConversationResponse> {
+  const cacheKey = title ?? '__default__';
+  const existing = inFlightCreateConversation.get(cacheKey);
   if (existing) {
     return existing;
   }
@@ -101,9 +107,9 @@ export async function createConversation(title = 'Nishi Chat'): Promise<Conversa
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-request-origin': REQUEST_ORIGIN_HEADER,
+        ...(REQUEST_ORIGIN_HEADER ? { 'x-request-origin': REQUEST_ORIGIN_HEADER } : {}),
       },
-      body: JSON.stringify({ title }),
+      body: JSON.stringify(title ? { title } : {}),
     });
 
     if (!response.ok) {
@@ -128,11 +134,16 @@ export async function createConversation(title = 'Nishi Chat'): Promise<Conversa
 
     return data;
   })().finally(() => {
-    inFlightCreateConversation.delete(title);
+    inFlightCreateConversation.delete(cacheKey);
   });
 
-  inFlightCreateConversation.set(title, promise);
+  inFlightCreateConversation.set(cacheKey, promise);
   return promise;
+}
+
+export interface SendMessageOptions {
+  clientMessageId: string;
+  retry?: boolean;
 }
 
 /**
@@ -141,7 +152,8 @@ export async function createConversation(title = 'Nishi Chat'): Promise<Conversa
  */
 export async function sendMessage(
   conversationId: string,
-  content: string
+  content: string,
+  options: SendMessageOptions
 ): Promise<SendMessageResponse> {
   if (!conversationId) {
     throw new Error('Active conversation ID is required to send messages');
@@ -149,15 +161,23 @@ export async function sendMessage(
 
   const url = `${API_BASE_URL}/v1/portals/conversations/${encodeURIComponent(conversationId)}/messages`;
 
+  const payload: { content: string; clientMessageId: string; retry?: boolean } = {
+    content: content.trim(),
+    clientMessageId: options.clientMessageId,
+  };
+  if (options.retry) {
+    payload.retry = true;
+  }
+
   const response = await fetchWithTimeout(
     url,
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-request-origin': REQUEST_ORIGIN_HEADER,
+        ...(REQUEST_ORIGIN_HEADER ? { 'x-request-origin': REQUEST_ORIGIN_HEADER } : {}),
       },
-      body: JSON.stringify({ content: content.trim() }),
+      body: JSON.stringify(payload),
     },
     SEND_MESSAGE_TIMEOUT_MS
   );
@@ -205,7 +225,7 @@ export async function getConversationMessages(conversationId: string): Promise<A
     const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers: {
-        'x-request-origin': REQUEST_ORIGIN_HEADER,
+        ...(REQUEST_ORIGIN_HEADER ? { 'x-request-origin': REQUEST_ORIGIN_HEADER } : {}),
       },
     });
 

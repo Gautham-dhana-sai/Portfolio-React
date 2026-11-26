@@ -8,15 +8,17 @@ import styles from './NishiChat.module.css';
 interface NishiWindowProps {
   messages: ChatMessageItem[];
   isLoading: boolean;
+  isRestoring?: boolean;
   onClose: () => void;
   onSendMessage: (text: string) => void;
-  onRetry: (messageId: string, content: string) => void;
+  onRetry: (clientMessageId: string, content: string) => void;
   isInitializing?: boolean;
 }
 
 export const NishiWindow: React.FC<NishiWindowProps> = ({
   messages,
   isLoading,
+  isRestoring = false,
   onClose,
   onSendMessage,
   onRetry,
@@ -27,7 +29,7 @@ export const NishiWindow: React.FC<NishiWindowProps> = ({
   // Auto-scroll to bottom as messages arrive or typing status changes
   useEffect(() => {
     streamEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+  }, [messages, isLoading, isRestoring]);
 
   return (
     <motion.aside
@@ -71,16 +73,35 @@ export const NishiWindow: React.FC<NishiWindowProps> = ({
           <NishiMessage key={msg.id} message={msg} onRetry={onRetry} />
         ))}
 
-        {/* Loading / Typing Indicator */}
-        {isLoading && (
-          <div className={`${styles.messageRow} ${styles.messageRowAssistant}`}>
-            <div className={styles.assistantAvatar} aria-hidden="true">
-              <Bot size={15} />
+        {/* History restoration shimmers */}
+        {isRestoring && (
+          <div className={styles.shimmerContainer} aria-label="Restoring previous messages, please wait">
+            <div className={styles.shimmerNotice}>
+              <span className={styles.shimmerNoticeDot} aria-hidden="true" />
+              <span>Fetching previous messages, please wait...</span>
             </div>
-            <div className={styles.typingIndicator} aria-label="Nishi is thinking">
-              <span className={styles.typingDot} />
-              <span className={styles.typingDot} />
-              <span className={styles.typingDot} />
+
+            <div className={`${styles.messageRow} ${styles.messageRowUser}`}>
+              <div className={`${styles.shimmerBubble} ${styles.shimmerBubbleUser}`}>
+                <div className={`${styles.shimmerLine} ${styles.shimmerLineMedium}`} />
+              </div>
+            </div>
+
+            <div className={`${styles.messageRow} ${styles.messageRowAssistant}`}>
+              <div className={styles.assistantAvatar} aria-hidden="true">
+                <Bot size={15} />
+              </div>
+              <div className={`${styles.shimmerBubble} ${styles.shimmerBubbleAssistant}`}>
+                <div className={styles.shimmerLine} />
+                <div className={`${styles.shimmerLine} ${styles.shimmerLineMedium}`} />
+                <div className={`${styles.shimmerLine} ${styles.shimmerLineShort}`} />
+              </div>
+            </div>
+
+            <div className={`${styles.messageRow} ${styles.messageRowUser}`}>
+              <div className={`${styles.shimmerBubble} ${styles.shimmerBubbleUser}`}>
+                <div className={`${styles.shimmerLine} ${styles.shimmerLineShort}`} />
+              </div>
             </div>
           </div>
         )}
@@ -92,7 +113,7 @@ export const NishiWindow: React.FC<NishiWindowProps> = ({
       <NishiInput
         onSendMessage={onSendMessage}
         isLoading={isLoading}
-        disabled={isInitializing}
+        disabled={isInitializing || isRestoring}
       />
     </motion.aside>
   );

@@ -16,7 +16,7 @@ import {
 import styles from './NishiChat.module.css';
 
 const INITIAL_GREETING_TEXT = 'Hey, Im Nishi, how may I assist you';
-const DEFAULT_CHAT_TITLE = import.meta.env.VITE_NISHI_CHAT_TITLE || 'Nishi Chat';
+const DEFAULT_CHAT_TITLE = import.meta.env.VITE_NISHI_CHAT_TITLE;
 
 const INITIAL_GREETING_MESSAGE: ChatMessageItem = {
   id: 'initial-greeting',
@@ -25,11 +25,19 @@ const INITIAL_GREETING_MESSAGE: ChatMessageItem = {
   timestamp: new Date(),
 };
 
+const generateClientMessageId = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+};
+
 export const NishiChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessageItem[]>([INITIAL_GREETING_MESSAGE]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -42,24 +50,20 @@ export const NishiChat: React.FC = () => {
    * Otherwise, creates a new conversation via POST /v1/portals/conversations.
    */
   const ensureConversation = useCallback(async (): Promise<string> => {
-    // 1. In-memory state check
     if (conversationId) {
       return conversationId;
     }
 
-    // 2. SessionStorage check
     const storedId = getStoredConversationId();
     if (storedId) {
       setConversationId(storedId);
       return storedId;
     }
 
-    // 3. Reuse in-flight creation promise to prevent duplicate API requests
     if (initPromiseRef.current) {
       return initPromiseRef.current;
     }
 
-    // 4. Create new conversation
     setIsInitializing(true);
     const creationPromise = (async () => {
       try {
@@ -69,7 +73,6 @@ export const NishiChat: React.FC = () => {
         setConversationId(newId);
         return newId;
       } catch (err) {
-        // Clear promise ref so future attempts can retry
         initPromiseRef.current = null;
         throw err;
       } finally {
@@ -82,40 +85,52 @@ export const NishiChat: React.FC = () => {
   }, [conversationId]);
 
   /**
-   * On mount: Check for existing session in sessionStorage and restore messages.
+   * On mount: Check for existing session in sessionStorage and restore messages,
+   * deduplicating by messageId.
    */
   useEffect(() => {
     const storedId = getStoredConversationId();
     if (!storedId) return;
 
     setConversationId(storedId);
+    setIsRestoring(true);
 
-    // Restore previous messages from GET /v1/portals/conversations/:id/messages
     let isCancelled = false;
     getConversationMessages(storedId)
       .then((apiMessages) => {
         if (isCancelled) return;
         if (Array.isArray(apiMessages) && apiMessages.length > 0) {
-          const mapped: ChatMessageItem[] = [
-            INITIAL_GREETING_MESSAGE,
-            ...apiMessages.map((m, idx) => ({
+          const seenIds = new Set<string>();
+          const restored: ChatMessageItem[] = [];
+
+          apiMessages.forEach((m, idx) => {
+            if (m.id) {
+              if (seenIds.has(m.id)) return;
+              seenIds.add(m.id);
+            }
+            restored.push({
               id: m.id || `restored-${idx}`,
               role: m.senderRole,
               content: m.content,
               citations: m.citations,
               timestamp: m.createdAt ? new Date(m.createdAt) : undefined,
               status: 'sent' as const,
-            })),
-          ];
-          setMessages(mapped);
+            });
+          });
+
+          setMessages([INITIAL_GREETING_MESSAGE, ...restored]);
           setHasInteracted(true);
         }
       })
       .catch((_err) => {
         if (isCancelled) return;
-        // If stored conversation is invalid or expired, reset for next session
         clearStoredConversationId();
         setConversationId(null);
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsRestoring(false);
+        }
       });
 
     return () => {
@@ -139,58 +154,51 @@ export const NishiChat: React.FC = () => {
   }, [isOpen, conversationId, ensureConversation]);
 
   /**
-   * Send a new message to Nishi
+   * Execute a single turn (initial send or retry) updating the single assistant slot in-place.
    */
-  const handleSendMessage = async (text: string) => {
-    if (!text.trim() || isLoading) return;
-
-    const userMsgId = `user-${Date.now()}`;
-    const userMessage: ChatMessageItem = {
-      id: userMsgId,
-      role: 'user',
-      content: text,
-      timestamp: new Date(),
-      status: 'sending',
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+  const executeTurn = async (
+    clientMessageId: string,
+    content: string,
+    isRetry: boolean
+  ) => {
     setIsLoading(true);
 
     try {
-      // 1. Ensure conversation session exists
       const activeId = await ensureConversation();
+      const response = await sendMessage(activeId, content, {
+        clientMessageId,
+        retry: isRetry || undefined,
+      });
 
-      // 2. Send message
-      const response = await sendMessage(activeId, text);
-
-      // 3. Mark user message as sent
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === userMsgId ? { ...msg, status: 'sent' } : msg
-        )
+        prev.map((msg) => {
+          if (msg.role === 'user' && msg.clientMessageId === clientMessageId) {
+            return { ...msg, status: 'sent', errorText: undefined };
+          }
+          if (msg.role === 'assistant' && msg.replyToClientMessageId === clientMessageId) {
+            return {
+              ...msg,
+              id: response.messageId || msg.id,
+              content: response.answer,
+              citations: response.citations,
+              status: 'sent',
+              errorText: undefined,
+            };
+          }
+          return msg;
+        })
       );
-
-      // 4. Append assistant response
-      const assistantMessage: ChatMessageItem = {
-        id: response.messageId || `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: response.answer,
-        citations: response.citations,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (err: any) {
-      const errorMsg =
-        err?.message ||
-        'Unable to reach Nishi RAG service right now. Please try again.';
-
+    } catch {
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === userMsgId
-            ? { ...msg, status: 'error', errorText: errorMsg }
-            : msg
-        )
+        prev.map((msg) => {
+          if (msg.role === 'user' && msg.clientMessageId === clientMessageId) {
+            return { ...msg, status: 'error' };
+          }
+          if (msg.role === 'assistant' && msg.replyToClientMessageId === clientMessageId) {
+            return { ...msg, status: 'error' };
+          }
+          return msg;
+        })
       );
     } finally {
       setIsLoading(false);
@@ -198,55 +206,57 @@ export const NishiChat: React.FC = () => {
   };
 
   /**
-   * Retry sending a failed message
+   * Send a new message to Nishi: creates 1 optimistic user message + 1 assistant slot.
    */
-  const handleRetry = async (messageId: string, content: string) => {
-    if (isLoading) return;
+  const handleSendMessage = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || isLoading) return;
 
-    // Reset status to 'sending'
+    const clientMessageId = generateClientMessageId();
+
+    const userMessage: ChatMessageItem = {
+      id: clientMessageId,
+      clientMessageId,
+      role: 'user',
+      content: trimmed,
+      timestamp: new Date(),
+      status: 'sending',
+    };
+
+    const assistantSlot: ChatMessageItem = {
+      id: `assistant-${clientMessageId}`,
+      replyToClientMessageId: clientMessageId,
+      retryContent: trimmed,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      status: 'sending',
+    };
+
+    setMessages((prev) => [...prev, userMessage, assistantSlot]);
+    await executeTurn(clientMessageId, trimmed, false);
+  };
+
+  /**
+   * Retry a failed turn using the exact same clientMessageId and retry: true,
+   * overriding the existing assistant slot in-place without duplicating messages.
+   */
+  const handleRetry = async (clientMessageId: string, content: string) => {
+    if (isLoading || !clientMessageId) return;
+
     setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId
-          ? { ...msg, status: 'sending', errorText: undefined }
-          : msg
-      )
+      prev.map((msg) => {
+        if (msg.role === 'user' && msg.clientMessageId === clientMessageId) {
+          return { ...msg, status: 'sending', errorText: undefined };
+        }
+        if (msg.role === 'assistant' && msg.replyToClientMessageId === clientMessageId) {
+          return { ...msg, status: 'sending', errorText: undefined };
+        }
+        return msg;
+      })
     );
-    setIsLoading(true);
 
-    try {
-      const activeId = await ensureConversation();
-      const response = await sendMessage(activeId, content);
-
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId ? { ...msg, status: 'sent' } : msg
-        )
-      );
-
-      const assistantMessage: ChatMessageItem = {
-        id: response.messageId || `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: response.answer,
-        citations: response.citations,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (err: any) {
-      const errorMsg =
-        err?.message ||
-        'Unable to reach Nishi RAG service right now. Please try again.';
-
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId
-            ? { ...msg, status: 'error', errorText: errorMsg }
-            : msg
-        )
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    await executeTurn(clientMessageId, content, true);
   };
 
   return (
@@ -257,6 +267,7 @@ export const NishiChat: React.FC = () => {
             key="nishi-window"
             messages={messages}
             isLoading={isLoading}
+            isRestoring={isRestoring}
             onClose={() => setIsOpen(false)}
             onSendMessage={handleSendMessage}
             onRetry={handleRetry}
